@@ -1,0 +1,132 @@
+import java.util.*;
+
+public class EightPuzzleBacktracking {
+
+    static final int N = 3;
+    static final int[][] GOAL = {
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 0}
+    };
+
+    static class Node {
+        int[][] state;
+        int x, y; // Blank tile position
+        List<String> path;
+
+        Node(int[][] state, int x, int y, List<String> path) {
+            this.state = state;
+            this.x = x;
+            this.y = y;
+            this.path = new ArrayList<>(path);
+        }
+    }
+
+    static int[][] cloneMatrix(int[][] matrix) {
+        int[][] clone = new int[N][N];
+        for (int i = 0; i < N; i++)
+            clone[i] = matrix[i].clone();
+        return clone;
+    }
+
+    static boolean isGoal(int[][] state) {
+        for (int i = 0; i < N; i++)
+            for (int j = 0; j < N; j++)
+                if (state[i][j] != GOAL[i][j])
+                    return false;
+        return true;
+    }
+
+    static void printState(int[][] state) {
+        for (int[] row : state) {
+            for (int tile : row) {
+                System.out.print(tile + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    static boolean solve(Node node, Set<String> visited, int depthLimit) {
+        if (isGoal(node.state)) {
+            System.out.println("Solution found!");
+            for (String move : node.path) {
+                System.out.println(move);
+            }
+            System.out.println("Final State:");
+            printState(node.state);
+            return true;
+        }
+
+        if (node.path.size() >= depthLimit) return false;
+
+        visited.add(matrixToString(node.state));
+
+        int[] dx = {-1, 1, 0, 0}; // Up, Down
+        int[] dy = {0, 0, -1, 1}; // Left, Right
+        String[] directions = {"Up", "Down", "Left", "Right"};
+
+        for (int i = 0; i < 4; i++) {
+            int newX = node.x + dx[i];
+            int newY = node.y + dy[i];
+
+            if (isValid(newX, newY)) {
+                int[][] newState = cloneMatrix(node.state);
+
+                // Swap blank with neighbor
+                newState[node.x][node.y] = newState[newX][newY];
+                newState[newX][newY] = 0;
+
+                String stateStr = matrixToString(newState);
+                if (!visited.contains(stateStr)) {
+                    List<String> newPath = new ArrayList<>(node.path);
+                    newPath.add(directions[i]);
+
+                    Node nextNode = new Node(newState, newX, newY, newPath);
+
+                    if (solve(nextNode, visited, depthLimit))
+                        return true;
+
+                    // Backtrack
+                    visited.remove(stateStr);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    static String matrixToString(int[][] matrix) {
+        StringBuilder sb = new StringBuilder();
+        for (int[] row : matrix)
+            for (int val : row)
+                sb.append(val);
+        return sb.toString();
+    }
+
+    static boolean isValid(int x, int y) {
+        return x >= 0 && y >= 0 && x < N && y < N;
+    }
+
+    public static void main(String[] args) {
+        int[][] start = {
+            {1, 2, 3},
+            {4, 0, 6},
+            {7, 5, 8}
+        };
+
+        int blankX = 1, blankY = 1; // Position of blank (0)
+
+        System.out.println("Initial Board:");
+        printState(start);  // <-- Print initial board here
+
+        Node root = new Node(start, blankX, blankY, new ArrayList<>());
+
+        Set<String> visited = new HashSet<>();
+        int depthLimit = 20; // Limit to prevent infinite recursion
+
+        if (!solve(root, visited, depthLimit)) {
+            System.out.println("No solution found within depth limit.");
+        }
+    }
+}
