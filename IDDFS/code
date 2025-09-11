@@ -1,0 +1,51 @@
+tree = {
+    'A': ['B', 'C'],
+    'B': ['D', 'E'],
+    'C': ['F', 'G'],
+    'D': ['H'],
+    'E': ['I'],
+    'F': [],
+    'G': [],
+    'H': [],
+    'I': []
+}
+
+def depth_limited_dfs(node, depth, limit, order, trace):
+    trace.append(f"call dfs(node={node}, depth={depth}, limit={limit})")
+
+    if depth > limit:
+        trace.append(f"  depth {depth} > limit {limit} - stop, backtrack")
+        return
+
+    # visit node (first time in this iteration)
+    order.append(node)
+    trace.append(f"  visit {node} (depth {depth}) -> current order: {''.join(order)}")
+
+    # explore children in defined order
+    for child in tree[node]:
+        depth_limited_dfs(child, depth + 1, limit, order, trace)
+
+    trace.append(f"backtrack from {node} (depth {depth})")
+
+def iddfs(root, max_limit):
+    for limit in range(0, max_limit + 1):
+        order = []
+        trace = []
+
+        trace.append(f"--- IDDFS iteration with limit = {limit} ---")
+
+        depth_limited_dfs(root, depth=0, limit=limit, order=order, trace=trace)
+
+        trace.append(f"Visited order at limit {limit}: {''.join(order)}")
+
+        print('\n'.join(trace))
+        print()  # blank line between iterations
+
+    # Return the last iteration's order (the final output for the chosen max_limit)
+    return order
+
+if __name__ == "__main__":
+    # change max_limit to control how deep you allow DFS to go
+    final = iddfs('A', max_limit=2)  # set 2 to get ABDECFG
+
+    print("Final output (order at last limit):", ''.join(final))
